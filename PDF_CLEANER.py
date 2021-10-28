@@ -44,7 +44,7 @@ def extract_only_texts(PDF:str, pages:list):
 
     #         # Get the bounding boxes of the tables on the page.
                 edges = page.curves+page.edges
-                if len(edges)  >=1 :
+                if len(edges)  >1 :
                     bboxes = [
                         table.bbox for table in page.find_tables(
                             table_settings={
@@ -66,9 +66,11 @@ def extract_only_texts(PDF:str, pages:list):
                         ]
                     
                 content = page.filter(not_within_bboxes).extract_text()
-                content = re.sub("\xa0","\n",content)
-                content = re.sub("\u3000","\n",content)
-                sentences.append(content)
+                if content:
+                    
+                    content = re.sub("\xa0","\n",content)
+                    content = re.sub("\u3000","\n",content)
+                    sentences.append(content)
 # 全ページぶん纏めたものを一旦、句読点で区切り直す
     whole_sentences = "\n".join(sentences)
     buffer = re.split("(?<=。(?!）))",whole_sentences)
