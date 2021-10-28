@@ -75,15 +75,15 @@ def extract_only_texts(PDF:str, pages:list):
     # buffer= re.split('(?<=。)',whole_sentences)
 #  不自然な改行を削除し、改行によって離れている文同士は繋げる
     for b in buffer:
-        cleaned_sentences.append(cleaner(b).strip())
+        b = cleaner(b).strip()
+        if b.isdigit():
+            continue
+        else:
+            cleaned_sentences.append(b)
     return cleaned_sentences
     
     # for b in buffer:
-    #     b = cleaner(b).strip()
-
-    #     if b.isdigit:
-    #         continue
-    #     else:
-    #         cleaned_sentences.append(b)
+    #     cleaned_sentences.append(cleaner(b).strip())
     # return cleaned_sentences
+
     
