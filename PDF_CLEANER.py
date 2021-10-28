@@ -71,9 +71,19 @@ def extract_only_texts(PDF:str, pages:list):
                 sentences.append(content)
 # 全ページぶん纏めたものを一旦、句読点で区切り直す
     whole_sentences = "\n".join(sentences)
-    buffer= re.split('(?<=。)',whole_sentences)
+    buffer = re.split("(?<=。(?!）))",whole_sentences)
+    # buffer= re.split('(?<=。)',whole_sentences)
 #  不自然な改行を削除し、改行によって離れている文同士は繋げる
     for b in buffer:
         cleaned_sentences.append(cleaner(b).strip())
     return cleaned_sentences
+    
+    # for b in buffer:
+    #     b = cleaner(b).strip()
+
+    #     if b.isdigit:
+    #         continue
+    #     else:
+    #         cleaned_sentences.append(b)
+    # return cleaned_sentences
     
