@@ -8,18 +8,59 @@ def cleaner(sentence):
     new=[]
     sentence_list = sentence.split("\n")
     for b in sentence_list:
-        # ページ下部のページ番号が存在する場合は削除
-        b = re.sub(r"―\s?[0-9０-９]\s?―\n?","",b)
+        # ページ番号が存在する場合は削除 10/29　追加:半角のバーや、二桁のページ数にも対応
+#         b = re.sub(r"―\s?[0-9０-９]+\s?―\n?","",b)
+#         b = re.sub(r"-\s?[0-9０-９]+\s?-\n?","",b)
+        b = re.sub(r"[―-]\s?[0-9０-９]+\s?[―-]\n?","",b)
+    
+        
         # 決算短信のヘッダーは無視
         if re.search(r"決算短信$",b):
             continue
-        m = re.search(r"(\([0-9０-９]\)|（[0-9０-９]）|[0-9０-９]|[①-⑨]).+(に関する|等の|の).*(分析|情報|概況|概要|事項)",b)
-        if m:
+        m = re.search(r"(\([0-9０-９]\)|（[0-9０-９]）|[0-9０-９]|[①-⑨]).+(に関する|等の|の).*(分析|情報|概況|概要|事項|考え方)",b)
+        m2 = re.search(r"^[\(|（]注[0-9０-９]?[\)|）]\s?.+",b)
+
+        if m or m2:
             new.append(b+"\n")
         else:
             new.append(b)
         
     return "".join(new)
+
+
+def cleaner_debug(sentence):
+    new=[]
+    sentence_list = sentence.split("\n")
+    for i, b in enumerate(sentence_list):
+        # ページ下部のページ番号が存在する場合は削除
+        b = re.sub(r"[―-]\s?[0-9０-９]+\s?[―-]\n?","",b)
+        # 決算短信のヘッダーは無視
+        if re.search(r"決算短信$",b):
+            continue
+        m = re.search(r"(\([0-9０-９]\)|（[0-9０-９]）|[0-9０-９]|[①-⑨]).+(に関する|等の|の).*(分析|情報|概況|概要|事項|考え方)",b)
+#         m2 = re.search(r"[\(|（]注[0-9０-９][\)|）]\s?.+",b)
+        m2 = re.search(r"^[\(|（]注[0-9０-９]?[\)|）]\s?.+",b)
+        #保留　例：ダイキン NTT ソフトバンクの16-17ページ,34-35ページ境界部分を検討
+        # (注1) システムセキュリティ:事業所向けオンライン・セキュリティシステム　とか
+        # ただの見出しでも改行をつける？でも不要なとこまで拾ってしまいそうなので...
+        # m2 = re.search(r"(\([0-9０-９]\)|（[0-9０-９]）|[0-9０-９]|[①-⑨]).+\n",b)
+        #if m or m2:
+        ##############
+        
+        if m or m2:
+            new.append(b+"\n")
+        # 次の要素が見出しじゃないか？
+        elif i< len(sentence_list)-1 and re.search(r"^([0-9０-９①-⑨a-zA-Z]\.\D|[（\(]\s?[0-9０-９①-⑨a-zA-Z]+\s?[）\)])",sentence_list[i+1]):
+            new.append(b+"\n")
+#             re.search(r"^(\([0-9０-９]\)|（[0-9０-９]）|[0-9０-９]|[①-⑨])",sentence_list[i+1])
+        else:
+            new.append(b)
+    
+    
+    
+    return "".join(new).split("\n")
+
+
 
 # 表を無視し、テキストのみ抽出する。
 def extract_only_texts(PDF:str, pages:list):
@@ -77,11 +118,13 @@ def extract_only_texts(PDF:str, pages:list):
     # buffer= re.split('(?<=。)',whole_sentences)
 #  不自然な改行を削除し、改行によって離れている文同士は繋げる
     for b in buffer:
-        b = cleaner(b).strip()
-        if b.isdigit():
-            continue
-        else:
-            cleaned_sentences.append(b)
+#         b = cleaner(b).strip()
+#         b = cleaner_debug(b).strip()
+#         if b.isdigit():
+#             continue
+#         else:
+#             cleaned_sentences.append(b)
+         cleaned_sentences += cleaner_debug(b)
     return cleaned_sentences
     
     # for b in buffer:
